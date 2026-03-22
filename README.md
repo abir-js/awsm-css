@@ -8,7 +8,7 @@ A lightweight, utility-first CSS engine inspired by Tailwind CSS — built from 
 
 ## 🌐 Live Demo
 
-👉 https://your-project.vercel.app
+👉 https://awsm-css.vercel.app/
 
 ---
 
