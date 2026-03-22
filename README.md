@@ -191,4 +191,4 @@ Pull requests are welcome! Some ideas for extending the engine:
 
 ---
 
-Made with ☕ by [Abir Bhattacharhee](https://github.com/abir-js)
+Made with ☕ by [Abir Bhattacharjee](https://github.com/abir-js)
