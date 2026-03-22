@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChaiTailwind Playground</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Sora', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #fdf3e7;
+    }
+    .panels { flex: 1; display: flex; overflow: hidden; }
+    .editor-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-right: 2px solid #e8c99a; }
+    .preview-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    #editor {
+      flex: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      resize: none;
+      outline: none;
+      border: none;
+      tab-size: 2;
+      overflow-y: auto;
+      padding: 20px;
+      background: #ffffff;
+      color: #2c1a08;
+    }
+    #preview {
+      flex: 1;
+      border: none;
+    }
+    .preset-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1.5px solid #e8c99a;
+      background: white;
+      color: #e8720c;
+      cursor: pointer;
+    }
+    .preset-btn.active { background: #e8720c; color: white; border-color: #e8720c; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .blink { animation: blink 1.8s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav style="height:54px; background:#fdf3e7; border-bottom:2px solid #e8c99a;
+              display:flex; align-items:center; justify-content:space-between;
+              padding:0 28px; flex-shrink:0;">
+    <a href="#" style="text-decoration:none; display:flex; align-items:center;">
+      <span style="color:#2c1a08; font-weight:800; font-size:19px;">&#9749; Chai</span>
+      <span style="color:#e8720c; font-weight:800; font-size:19px;">Tailwind</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:20px;">
+      <a href="#" style="text-decoration:none; color:#9a6d3e; font-weight:600; font-size:14px;">Docs</a>
+      <a href="#" style="text-decoration:none; color:#9a6d3e; font-weight:600; font-size:14px;">Components</a>
+      <a href="https://github.com" target="_blank"
+         style="text-decoration:none; display:flex; align-items:center; gap:6px;
+                background:#2c1a08; color:white; font-weight:700; font-size:13px;
+                padding:7px 15px; border-radius:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.6-4.04-1.6-.54-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
+
+  <!-- TOOLBAR -->
+  <div style="height:46px; background:#fae8ce; border-bottom:2px solid #e8c99a;
+              display:flex; align-items:center; gap:8px; padding:0 28px; flex-shrink:0;">
+    <span style="font-size:11px; font-weight:700; text-transform:uppercase;
+                 letter-spacing:1px; color:#9a6d3e; margin-right:4px;">Presets</span>
+    <button class="preset-btn active" onclick="loadPreset('card', this)">&#128230; Card</button>
+    <button class="preset-btn" onclick="loadPreset('navbar', this)">&#128193; Navbar</button>
+    <button class="preset-btn" onclick="loadPreset('buttons', this)">&#128280; Buttons</button>
+    <button class="preset-btn" onclick="loadPreset('flex', this)">&#8596; Flexbox</button>
+    <button class="preset-btn" onclick="loadPreset('form', this)">&#128221; Form</button>
+    <button onclick="runCode()"
+            style="margin-left:auto; background:#e8720c; color:white; border:none;
+                   font-family:'Sora',sans-serif; font-size:13px; font-weight:700;
+                   padding:7px 22px; border-radius:8px; cursor:pointer;">
+      &#9654; Run
+    </button>
+  </div>
+
+  <!-- PANELS -->
+  <div class="panels">
+
+    <!-- EDITOR -->
+    <div class="editor-panel">
+      <div style="height:38px; flex-shrink:0; background:#fae8ce; border-bottom:1.5px solid #e8c99a;
+                  display:flex; align-items:center; gap:6px; padding:0 14px;">
+        <div style="width:9px;height:9px;border-radius:50%;background:#ff5f57;"></div>
+        <div style="width:9px;height:9px;border-radius:50%;background:#ffbd2e;"></div>
+        <div style="width:9px;height:9px;border-radius:50%;background:#28c840;"></div>
+        <span style="margin-left:6px; background:#e8720c; color:white;
+                     font-family:'JetBrains Mono',monospace; font-size:12px;
+                     font-weight:600; padding:3px 10px; border-radius:5px;">index.html</span>
+      </div>
+      <textarea id="editor" spellcheck="false"></textarea>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-panel">
+      <div style="height:38px; flex-shrink:0; background:#fae8ce; border-bottom:1.5px solid #e8c99a;
+                  display:flex; align-items:center; gap:6px; padding:0 14px;">
+        <div style="width:9px;height:9px;border-radius:50%;background:#ff5f57;"></div>
+        <div style="width:9px;height:9px;border-radius:50%;background:#ffbd2e;"></div>
+        <div style="width:9px;height:9px;border-radius:50%;background:#28c840;"></div>
+        <span style="margin-left:auto; font-size:11px; font-weight:700;
+                     text-transform:uppercase; letter-spacing:1px; color:#9a6d3e;">Live Preview</span>
+        <div class="blink" style="width:7px;height:7px;border-radius:50%;background:#16a34a;
+                                   box-shadow:0 0 5px rgba(22,163,74,.6);"></div>
+      </div>
+      <!-- iframe loads preview.html which handles chai via postMessage -->
+      <iframe id="preview" src="preview.html"></iframe>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div style="height:28px; flex-shrink:0; background:#fae8ce; border-top:2px solid #e8c99a;
+              display:flex; align-items:center; gap:10px; padding:0 20px;">
+    <span style="font-size:11px; color:#9a6d3e; font-weight:500;">ChaiTailwind Playground</span>
+    <span style="font-size:11px; color:#e8c99a;">&#183;</span>
+    <span style="font-size:11px; color:#9a6d3e;">Live updates as you type</span>
+    <span style="font-size:11px; color:#e8c99a;">&#183;</span>
+    <kbd style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600;
+                background:#e8c99a; color:#2c1a08; padding:2px 6px; border-radius:3px;">Tab</kbd>
+    <span style="font-size:11px; color:#9a6d3e;">indent</span>
+    <kbd style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600;
+                background:#e8c99a; color:#2c1a08; padding:2px 6px; border-radius:3px;">Ctrl+Enter</kbd>
+    <span style="font-size:11px; color:#9a6d3e;">run</span>
+  </div>
+
+  <script>
+    const presets = {
+
+      card: `<div class="chai-bg-white chai-p-6 chai-rounded-16 chai-shadow-md chai-maxw-340">
+
+  <div class="chai-flex chai-items-center chai-gap-3 chai-mb-4">
+    <div class="chai-bg-#e8720c chai-rounded-full chai-w-52 chai-h-52
+                chai-flex chai-items-center chai-justify-center chai-fs-26">
+      ☕
+    </div>
+    <div>
+      <p class="chai-text-#2c1a08 chai-font-bold chai-fs-18 chai-mb-1">ChaiTailwind</p>
+      <p class="chai-text-#9a6d3e chai-fs-13">Utility CSS, brewed fresh</p>
+    </div>
+  </div>
+
+  <p class="chai-text-#555555 chai-fs-14 chai-leading-24 chai-mb-5">
+    Add chai- classes to any element and watch
+    styles apply instantly. No bundler needed.
+  </p>
+
+  <button class="chai-bg-#e8720c chai-text-white chai-py-3 chai-px-6
+                 chai-rounded-8 chai-font-bold chai-fs-14 chai-w-full chai-cursor-pointer"
+          style="border:none;">
+    Get Started →
+  </button>
+
+</div>`,
+
+      navbar: `<div class="chai-bg-white chai-px-8 chai-py-4 chai-flex chai-items-center
+          chai-justify-between chai-border-2 chai-bordercolor-#e8c99a chai-mb-6">
+  <span class="chai-text-#e8720c chai-font-bold chai-fs-20">☕ ChaiTailwind</span>
+  <div class="chai-flex chai-items-center chai-gap-6">
+    <span class="chai-text-#9a6d3e chai-fs-14">Docs</span>
+    <span class="chai-text-#9a6d3e chai-fs-14">Components</span>
+    <button class="chai-bg-#e8720c chai-text-white chai-px-5 chai-py-2
+                   chai-rounded-8 chai-font-bold chai-fs-13"
+            style="border:none; cursor:pointer;">Get Started</button>
+  </div>
+</div>
+
+<h1 class="chai-text-#2c1a08 chai-font-bold chai-fs-36 chai-align-center chai-mb-3">
+  Build fast. Ship faster. ☕
+</h1>
+<p class="chai-text-#9a6d3e chai-fs-16 chai-align-center">
+  Prefix any style with chai- and you are good to go.
+</p>`,
+
+      buttons: `<p class="chai-text-#2c1a08 chai-font-bold chai-fs-22 chai-mb-6">Button Styles</p>
+
+<div class="chai-flex chai-gap-4 chai-mb-5 chai-flex-wrap">
+  <button class="chai-bg-#e8720c chai-text-white chai-px-6 chai-py-3
+                 chai-rounded-8 chai-font-bold chai-fs-14"
+          style="border:none; cursor:pointer;">Primary</button>
+
+  <button class="chai-bg-white chai-text-#e8720c chai-px-6 chai-py-3
+                 chai-rounded-8 chai-font-bold chai-fs-14
+                 chai-border-2 chai-bordercolor-#e8720c"
+          style="cursor:pointer;">Outline</button>
+
+  <button class="chai-bg-#2c1a08 chai-text-white chai-px-6 chai-py-3
+                 chai-rounded-8 chai-font-bold chai-fs-14"
+          style="border:none; cursor:pointer;">Dark</button>
+
+  <button class="chai-bg-#16a34a chai-text-white chai-px-6 chai-py-3
+                 chai-rounded-8 chai-font-bold chai-fs-14"
+          style="border:none; cursor:pointer;">Success</button>
+</div>
+
+<div class="chai-flex chai-gap-4 chai-flex-wrap">
+  <button class="chai-bg-#e8720c chai-text-white chai-px-5 chai-py-2
+                 chai-rounded-full chai-font-bold chai-fs-13"
+          style="border:none; cursor:pointer;">Pill Small</button>
+
+  <button class="chai-bg-#e8720c chai-text-white chai-px-8 chai-py-4
+                 chai-rounded-full chai-font-bold chai-fs-15"
+          style="border:none; cursor:pointer;">Pill Large</button>
+
+  <button class="chai-bg-white chai-text-#9a6d3e chai-px-6 chai-py-3
+                 chai-rounded-8 chai-font-medium chai-fs-14 chai-opacity-50
+                 chai-border-2 chai-bordercolor-#e8c99a"
+          style="cursor:not-allowed;">Disabled</button>
+</div>`,
+
+      flex: `<p class="chai-text-#2c1a08 chai-font-bold chai-fs-22 chai-mb-5">Flexbox Layouts</p>
+
+<div class="chai-flex chai-justify-between chai-items-center chai-bg-white
+            chai-p-4 chai-rounded-12 chai-border-2 chai-bordercolor-#e8c99a chai-mb-4">
+  <span class="chai-text-#e8720c chai-font-bold chai-fs-15">Left</span>
+  <span class="chai-text-#9a6d3e chai-fs-15">Center</span>
+  <span class="chai-text-#2c1a08 chai-font-bold chai-fs-15">Right</span>
+</div>
+
+<div class="chai-flex chai-gap-4 chai-mb-4">
+  <div class="chai-bg-#e8720c chai-text-white chai-p-5 chai-rounded-12
+              chai-flex chai-items-center chai-justify-center chai-fs-28"
+       style="flex:1;">🎨</div>
+  <div class="chai-bg-#2c1a08 chai-text-white chai-p-5 chai-rounded-12
+              chai-flex chai-items-center chai-justify-center chai-fs-28"
+       style="flex:1;">⚡</div>
+  <div class="chai-bg-white chai-p-5 chai-rounded-12 chai-flex chai-items-center
+              chai-justify-center chai-border-2 chai-bordercolor-#e8c99a chai-fs-28"
+       style="flex:1;">☕</div>
+</div>
+
+<div class="chai-flex chai-justify-center chai-gap-3">
+  <span class="chai-bg-#e8720c chai-text-white chai-px-4 chai-py-2
+               chai-rounded-full chai-font-bold chai-fs-13">CSS</span>
+  <span class="chai-bg-white chai-text-#e8720c chai-px-4 chai-py-2
+               chai-rounded-full chai-font-bold chai-fs-13
+               chai-border-2 chai-bordercolor-#e8720c">Utility</span>
+  <span class="chai-bg-#2c1a08 chai-text-white chai-px-4 chai-py-2
+               chai-rounded-full chai-font-bold chai-fs-13">Classes</span>
+</div>`,
+
+      form: `<div class="chai-bg-white chai-p-8 chai-rounded-16 chai-shadow-lg chai-maxw-380">
+
+  <p class="chai-text-#2c1a08 chai-font-bold chai-fs-24 chai-mb-2">Create Account</p>
+  <p class="chai-text-#9a6d3e chai-fs-13 chai-mb-6">Join the Chai community ☕</p>
+
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <div>
+      <label class="chai-text-#2c1a08 chai-font-bold chai-fs-12 chai-block chai-mb-2">Full Name</label>
+      <input class="chai-w-full chai-border-2 chai-bordercolor-#e8c99a
+                    chai-rounded-8 chai-px-4 chai-py-3 chai-fs-14"
+             style="outline:none; font-family:inherit; box-sizing:border-box;"
+             placeholder="Akash - Apple Fan Boy" />
+    </div>
+
+    <div>
+      <label class="chai-text-#2c1a08 chai-font-bold chai-fs-12 chai-block chai-mb-2">Email</label>
+      <input class="chai-w-full chai-border-2 chai-bordercolor-#e8c99a
+                    chai-rounded-8 chai-px-4 chai-py-3 chai-fs-14"
+             style="outline:none; font-family:inherit; box-sizing:border-box;"
+             type="email" placeholder="chai@example.com" />
+    </div>
+
+    <div>
+      <label class="chai-text-#2c1a08 chai-font-bold chai-fs-12 chai-block chai-mb-2">Password</label>
+      <input class="chai-w-full chai-border-2 chai-bordercolor-#e8c99a
+                    chai-rounded-8 chai-px-4 chai-py-3 chai-fs-14"
+             style="outline:none; font-family:inherit; box-sizing:border-box;"
+             type="password" placeholder="••••••••" />
+    </div>
+
+    <button class="chai-bg-#e8720c chai-text-white chai-w-full chai-py-4
+                   chai-rounded-8 chai-font-bold chai-fs-15"
+            style="border:none; cursor:pointer; margin-top:4px;">
+      Create Account →
+    </button>
+
+  </div>
+
+  <p class="chai-text-#9a6d3e chai-fs-13 chai-align-center chai-mt-4">
+    Already have an account?
+    <span class="chai-text-#e8720c chai-font-semibold" style="cursor:pointer;">Sign in</span>
+  </p>
+
+</div>`
+
+    };
+
+    const editor  = document.getElementById('editor');
+    const preview = document.getElementById('preview');
+
+    // Send HTML to preview.html via postMessage — zero escaping problems
+    function runCode() {
+      preview.contentWindow.postMessage(editor.value, '*');
+    }
+
+    // Wait for iframe to load, then send initial code
+    preview.addEventListener('load', function () {
+      editor.value = presets.card;
+      runCode();
+    });
+
+    let debounce;
+    editor.addEventListener('input', function () {
+      clearTimeout(debounce);
+      debounce = setTimeout(runCode, 350);
+    });
+
+    editor.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = editor.selectionStart;
+        editor.value = editor.value.slice(0, s) + '  ' + editor.value.slice(editor.selectionEnd);
+        editor.selectionStart = editor.selectionEnd = s + 2;
+      }
+      if (e.ctrlKey && e.key === 'Enter') runCode();
+    });
+
+    function loadPreset(name, btn) {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      editor.value = presets[name];
+      runCode();
+    }
+  </script>
+
+</body>
+</html>

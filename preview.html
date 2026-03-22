@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #fdf3e7; padding: 32px; }
+  </style>
+</head>
+<body>
+
+
+  <div id="root"></div>
+
+  <script src="./src/chai.js"></script>
+
+  <script>
+    // Listen for HTML from the parent editor
+    window.addEventListener("message", function (e) {
+      var root = document.getElementById("root");
+
+      // Inject the new HTML
+      root.innerHTML = e.data;
+
+      // Re-run chai on the new elements
+      root.querySelectorAll("*").forEach(function (el) {
+        applyChaiStyles(el);
+      });
+    });
+  </script>
+
+</body>
+</html>
